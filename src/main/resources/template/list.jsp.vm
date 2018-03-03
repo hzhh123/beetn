@@ -1,0 +1,248 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/commons/global.jsp" %>
+<script type="text/javascript">
+    var ${bean.lowerName}DataGrid;
+    $(function() {
+        ${bean.lowerName}DataGrid = $('#${bean.lowerName}DataGrid').datagrid({
+            url : '${path}/${bean.lowerName}/dataGrid',
+            striped : true,
+            rownumbers : true,
+            pagination : true,
+            singleSelect : true,
+            idField : 'id',
+            sortName : 'id',
+            sortOrder : 'asc',
+            pageSize : 20,
+            pageList : [ 10, 20, 30, 40, 50, 100, 200, 300, 400, 500 ],
+            columns : [ [
+#foreach($codeBeanProperty in $codeBeanProperties)
+                {
+                width : '100',
+                title : '$codeBeanProperty.comment',
+                field : '$codeBeanProperty.javaField'
+#if($codeBeanProperty.showType=="date")
+                ,formatter : function(value, row, index) {
+                	if(value==null){
+               	   	 return "";
+               	 	}
+                    var date=new Date(value);
+	               	 var y = date.getFullYear();
+	               	 var m = date.getMonth() + 1;
+	               	 if(m < 10) m = "0" + m;
+	               	 var d = date.getDate();
+	               	 if(d < 10) d = "0" + d;
+	               	 var h = date.getHours();
+	               	 if(h < 10) h = "0" + h;
+	               	 var min = date.getMinutes();
+	               	 if(min < 10) min = "0" + min;
+	               	 var s=date.getSeconds();
+	               	 if(s<10)s="0"+s;
+                     return y+"/"+m+"/"+d;
+                 }
+#end
+#if($codeBeanProperty.showType=="datetime")
+                ,formatter : function(value, row, index) {
+                	if(value==null){
+               	   	 return "";
+               	 	}
+                    var date=new Date(value);
+	               	 var y = date.getFullYear();
+	               	 var m = date.getMonth() + 1;
+	               	 if(m < 10) m = "0" + m;
+	               	 var d = date.getDate();
+	               	 if(d < 10) d = "0" + d;
+	               	 var h = date.getHours();
+	               	 if(h < 10) h = "0" + h;
+	               	 var min = date.getMinutes();
+	               	 if(min < 10) min = "0" + min;
+	               	 var s=date.getSeconds();
+	               	 if(s<10)s="0"+s;
+                     return y+"/"+m+"/"+d+" "+h+":"+min+":"+s;
+                 }
+#end
+#if($codeBeanProperty.showType=="radio")
+               ,formatter : function(value, row, index) {
+                    switch (value) {
+                    case 1:
+                        return '有效';
+                    case 0:
+                        return '无效';
+                    }
+                }
+#end
+#if($codeBeanProperty.showType=="hidden")
+                ,hidden : true
+#end
+            },
+#end
+            ]],
+            frozenColumns : [ [{
+                field : 'action',
+                title : '操作',
+                width : 200,
+                formatter : function(value, row, index) {
+                    var str = '';
+                    str += $.formatString('<a href="javascript:void(0)" class="${bean.lowerName}-easyui-linkbutton-edit" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="edit${bean.name}Fun(\'{0}\');" >编辑</a>', row.id);
+                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                    str += $.formatString('<a href="javascript:void(0)" class="${bean.lowerName}-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="delete${bean.name}Fun(\'{0}\');" >删除</a>', row.id);
+                      str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                    str += $.formatString('<a href="javascript:void(0)" class="${bean.lowerName}-easyui-linkbutton-view" data-options="plain:true,iconCls:\'fi-magnifying-glass\'" onclick="view${bean.name}Fun(\'{0}\');" >查看</a>', row.id);
+                    return str;
+                }
+            } ] ],
+            onLoadSuccess:function(data){
+                $('.${bean.lowerName}-easyui-linkbutton-edit').linkbutton({text:'编辑'});
+                $('.${bean.lowerName}-easyui-linkbutton-del').linkbutton({text:'删除'});
+                $('.${bean.lowerName}-easyui-linkbutton-view').linkbutton({text:'查看'});
+            },
+            toolbar : '#${bean.lowerName}Toolbar'
+        });
+    });
+
+    function add${bean.name}Fun() {
+        parent.$.modalDialog({
+            title : '添加',
+            width : 500,
+            height : 300,
+            href : '${path}/${bean.lowerName}/addPage',
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = ${bean.lowerName}DataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#${bean.lowerName}AddForm');
+                    f.submit();
+                }
+            } ]
+        });
+    }
+
+    function edit${bean.name}Fun(id) {
+        if (id == undefined) {
+            var rows = ${bean.lowerName}DataGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {
+            ${bean.lowerName}DataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.modalDialog({
+            title : '编辑',
+            width : 500,
+            height : 300,
+            href : '${path}/${bean.lowerName}/editPage/' + id,
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = ${bean.lowerName}DataGrid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#${bean.lowerName}EditForm');
+                    f.submit();
+                }
+            } ]
+        });
+    }
+
+    function delete${bean.name}Fun(id) {
+        if (id == undefined) {//点击右键菜单才会触发这个
+            var rows = ${bean.lowerName}DataGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {//点击操作里面的删除图标会触发这个
+            ${bean.lowerName}DataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.messager.confirm('询问', '您是否要删除吗？', function(b) {
+            if (b) {
+                progressLoad();
+                $.post('${path}/${bean.lowerName}/delete/'+id, {}
+                , function(result) {
+                    if (result.success) {
+                        parent.$.messager.alert('提示', result.msg, 'info');
+                        ${bean.lowerName}DataGrid.datagrid('reload');
+                    }
+                    progressClose();
+                }, 'JSON');
+            }
+        });
+    }
+     function view${bean.name}Fun(id) {
+        if (id == undefined) {
+            var rows =  ${bean.lowerName}DataGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {
+             ${bean.lowerName}DataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.modalDialog({
+            title : '查看',
+            width : 800,
+            height : 450,
+            href : '${path}/${bean.lowerName}/viewPage/' + id,
+        });
+    }
+#set($query=0)
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.isQuery=="1")
+#set($query=$query+1)
+#end
+#end
+#if($query>0)
+    function search${bean.name}Fun() {
+    	${bean.lowerName}DataGrid.datagrid('load', $.serializeObject($('#search${bean.name}Form')));
+    }
+    function clean${bean.name}Fun() {
+        $('#search${bean.name}Form input').val('');
+       ${bean.lowerName}DataGrid.datagrid('load', {});
+    }
+#end
+</script>
+<div class="easyui-layout" data-options="fit:true,border:false">
+#set($search=0)
+#foreach($codeBeanProperty in $codeBeanProperties)
+    #if($codeBeanProperty.isQuery=="1")
+        #set($search=$search+1)
+    #end
+#end
+#if($search>0)
+<div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff">
+        <form id="search${bean.name}Form">
+            <table>
+#set($m1=1)
+#set($html="")
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.isQuery=="1")
+#set($html=$html+"<tr>
+<td>${codeBeanProperty.comment}</td>
+<td>
+#if($codeBeanProperty.showType==""text"")
+<input name=""$codeBeanProperty.javaField""   type=""text"" placeholder=""请输入$codeBeanProperty.comment"" class=""easyui-text  span2"" >
+</td>
+#end
+#if($codeBeanProperty.showType==""date""||$codeBeanProperty.showType==""datetime"")
+<input name=""${codeBeanProperty.javaField}Start""  type=""text""  class=""easyui-text easyui-datebox  span2""  style=""height: 29px;"">
+~<input name=""${codeBeanProperty.javaField}End""  type=""text""  class=""easyui-text easyui-datebox  span2""  style=""height: 29px;"">
+</td>
+#end
+#if($codeBeanProperty.showType==""select"")
+<select name=""$codeBeanProperty.javaField""  class=""easyui-combobox"" data-options=""width:140,height:29,editable:false,panelHeight:'auto'"">
+<option value="""">请选择</option>
+<option value=""1"">有效</option>
+<option value=""0"">无效</option>
+</select>
+</td>
+#end
+")
+#end
+#end
+#set($html=$html+"<td>
+  <a href=""javascript:void(0);"" class=""easyui-linkbutton"" data-options=""iconCls:'fi-magnifying-glass',plain:true"" onclick=""search${bean.name}Fun();"">查询</a>
+<a href=""javascript:void(0);"" class=""easyui-linkbutton"" data-options=""iconCls:'fi-x-circle',plain:true"" onclick=""clean${bean.name}Fun();"">清空</a>
+</td>")
+#set($html=$html+"</tr>")
+                $html
+
+            </table>
+        </form>
+    </div>
+#end
+    <div data-options="region:'center',fit:true,border:false">
+        <table id="${bean.lowerName}DataGrid" data-options="fit:true,border:false"></table>
+    </div>
+</div>
+<div id="${bean.lowerName}Toolbar" style="display: none;">
+    <a onclick="add${bean.name}Fun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
+</div>

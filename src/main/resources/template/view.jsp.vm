@@ -1,0 +1,62 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/commons/global.jsp" %>
+<div class="easyui-layout" data-options="fit:true,border:false">
+    <div data-options="region:'center',border:false" title="" style="overflow-x:hidden;overflow-y: auto;padding: 3px;">
+             <table class="grid">
+#set($m=1)
+#set($n=1)
+#set($html="")
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.javaField!="id")
+#if($m%2!=0)
+#set($html=$html+"          <tr>
+#if($codeBeanProperty.showType!='hidden')
+                    <td><b>$codeBeanProperty.comment</b></td>
+                    <td>
+#if($codeBeanProperty.showType=='select')
+                    ${${bean.lowerName}.${codeBeanProperty.javaField}=='1'?'有效':'无效'}
+#end
+#if($codeBeanProperty.showType!='select')
+                    ${${bean.lowerName}.${codeBeanProperty.javaField}}
+#end
+
+#end
+                    </td>")
+#end
+#if($m%2==0)
+#set($html=$html+"
+#if($codeBeanProperty.showType!='hidden')
+                    <td><b>$codeBeanProperty.comment</b></td>
+                    <td>
+#if($codeBeanProperty.showType=='select')
+                    ${${bean.lowerName}.${codeBeanProperty.javaField}=='1'?'有效':'无效'}
+#end
+#if($codeBeanProperty.showType!='select')
+                    ${${bean.lowerName}.${codeBeanProperty.javaField}}
+#end
+                     </td>
+#end
+                </tr>")
+#end
+#set($m=$m+$n)
+#end
+#end
+#set($k=5)
+#set($l=$html.length()-$k)
+#set($var=$html.substring($l,$html.length()))
+#if($var=="</td>")
+#set($e=$html)
+#set($al=$e.lastIndexOf("<td>"))
+#set($b=$e.substring(0,$al))
+#set($c=$e.substring($al,$e.length()))
+#set($c=$c.replace('<td>','<td colspan="3">'))
+#set($f=$b+$c)
+#set($f=$f+"</tr>")
+#end
+#if($var!="</td>")
+    #set($f=$html)
+#end
+$f
+            </table>
+    </div>
+</div>

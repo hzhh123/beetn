@@ -1,0 +1,119 @@
+package com.hd.service.impl;
+
+import com.hd.dao.BaseDao;
+import com.hd.entity.${bean.name};
+import com.hd.service.${bean.name}Service;
+import com.hd.util.StringUtils;
+import com.hd.util.result.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+#set($time=0)
+#foreach ( $codeBeanProperty in $codeBeanProperties )
+#if($codeBeanProperty.type=="datetime")
+#set($time=$time+1)
+#end
+#end
+#if($time>0)
+import java.util.Date;
+#end
+/**
+* ${codeBeanProperties.get(0).description}
+*/
+@Service("${bean.lowerName}Service")
+public class ${bean.name}ServiceImpl implements ${bean.name}Service {
+    @Autowired
+    private BaseDao<${bean.name},Long>${bean.lowerName}Dao;
+
+    @Override
+    public void save(${bean.name} ${bean.lowerName}) {
+#foreach ( $codeBeanProperty in $codeBeanProperties )
+#if($codeBeanProperty.type=="datetime")
+        ${bean.lowerName}.set${codeBeanProperty.methodFieldName}(new Date())
+#end
+#end
+       ${bean.lowerName}Dao.save(${bean.lowerName});
+    }
+
+    @Override
+    public void delete(Long id) {
+        ${bean.lowerName}Dao.delete(${bean.name}.class,id);
+    }
+
+    @Override
+    public void update(${bean.name} ${bean.lowerName}) {
+#foreach ($codeBeanProperty in $codeBeanProperties )
+#if($codeBeanProperty.type=="datetime")
+        ${bean.name} vo=${bean.lowerName}Dao.get(${bean.name}.class,${bean.lowerName}.getId());
+        ${bean.lowerName}.set${codeBeanProperty.methodFieldName}(vo.get${codeBeanProperty.methodFieldName}())
+#end
+#end
+        ${bean.lowerName}Dao.update(${bean.lowerName});
+    }
+    @Override
+    public ${bean.name} get(Long id) {
+        return ${bean.lowerName}Dao.get(${bean.name}.class, id);
+    }
+
+    @Override
+    public void selectDataGrid(PageInfo pageInfo) {
+        String hql="from ${bean.name} where 1=1 ";
+        Map<String,Object>condition=pageInfo.getCondition();
+        List<Object> params=new ArrayList<Object>();
+#foreach($codeBeanProperty in $codeBeanProperties )
+#if($codeBeanProperty.isQuery=="1")
+#if($codeBeanProperty.type!="date" && $codeBeanProperty.type!="datetime")
+        if(StringUtils.isNotBlank((String)condition.get("$codeBeanProperty.javaField")) {
+            hql+=" and $codeBeanProperty.javaField=?";
+#if($codeBeanProperty.javaType=="Integer")
+            params.add(Integer.parseInt((String)condition.get("$codeBeanProperty.javaField")));
+#end
+#if($codeBeanProperty.javaType=="Long")
+            params.add(Long.valueOf((String)condition.get("$codeBeanProperty.javaField")));
+#end
+#if($codeBeanProperty.javaType=="String")
+            params.add((String)condition.get("$codeBeanProperty.javaField"));
+#end
+        }
+#end
+#if($codeBeanProperty.type=="date" || $codeBeanProperty.type=="datetime")
+        if(condition.get("${codeBeanProperty.javaField}Start")!=null) {
+            hql+=" and $codeBeanProperty.javaField >=?";
+            params.add(condition.get("${codeBeanProperty.javaField}Start"));
+        }
+        if(condition.get("${codeBeanProperty.javaField}End")!=null) {
+            hql+=" and $codeBeanProperty.javaField <=?";
+            params.add(condition.get("${codeBeanProperty.javaField}End"));
+        }
+#end
+#end
+#end
+        if(!pageInfo.getSort().equals("")) {
+            hql+=" order by "+pageInfo.getSort()+" "+pageInfo.getOrder();
+        }
+        List<${bean.name}> ${bean.lowerName}s=${bean.lowerName}Dao.findPage(hql, pageInfo.getNowpage(), pageInfo.getPagesize(),params);
+        pageInfo.setRows(${bean.lowerName}s);
+        int total=${bean.lowerName}Dao.findByList(hql,params).size();
+        pageInfo.setTotal(total);
+    }
+
+
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.valid!="" && $codeBeanProperty.valid)
+       @Override
+       public  boolean valid${codeBeanProperty.methodFieldName}(${codeBeanProperty.javaType}  ${codeBeanProperty.javaField}) {
+           boolean b=true;//true-可用，false-占用
+           if(StringUtils.isNotNull(${codeBeanProperty.javaField})) {
+               String hql="from ${bean.name} where ${codeBeanProperty.javaField}=?";
+               List<${bean.name}>${bean.lowerName}s=${bean.lowerName}Dao.find(hql,${codeBeanProperty.javaField});
+               if(${bean.lowerName}s.size()>0) {
+                   b=false;
+               }
+           }
+           return b;
+       }
+#end
+#end
+
+}

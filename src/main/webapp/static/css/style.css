@@ -1,0 +1,32 @@
+html,body{
+	height:100%;
+	width:100%;
+	background:#f8f8f8;
+	overflow: hidden;
+}
+.navbar-default{
+	background: #fff;
+}
+.navbar .wrapper{
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+.navbar-fixed-top+.container-body{
+	margin-top:50px;
+}
+.metismenu .active>a{
+	 color: #f8f9fa;
+    text-decoration: none;
+    background: #5cb85c;
+}
+@media(max-width:768px){
+	.navbar-brand i.pc{
+	display:block;
+	}
+}
+@media(min-width:768px){
+	.navbar-brand i.pc{
+		display:none;
+	}
+}

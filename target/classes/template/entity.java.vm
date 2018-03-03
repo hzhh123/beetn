@@ -1,0 +1,125 @@
+package ${bean.beanUrl};
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+#set($date=0)
+#set($datetime=0)
+#set($transient=0)
+#foreach ( $codeBeanProperty in $codeBeanProperties )
+#if($codeBeanProperty.priKey=="PRI")
+import javax.persistence.Id;
+import javax.persistence.GenerationType;
+#end
+#if($codeBeanProperty.extra!="")
+import javax.persistence.GeneratedValue;
+#end
+#if($codeBeanProperty.type=="date")
+#set($date=$date+1)
+#end
+#if($codeBeanProperty.type=="datetime")
+#set($datetime=$datetime+1)
+#end
+#if($codeBeanProperty.isTransient=="1")
+#set($transient=$transient+1)
+#end
+#end
+#if($date>0 || $datetime>0)
+import java.util.Date;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+#end
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.isQuery=="1")
+#if($codeBeanProperty.type=="date" || $codeBeanProperty.type=="datetime")
+#set($transient=$transient+1)
+#end
+#end
+#end
+#if($transient>0)
+import javax.persistence.Transient;
+#end
+
+/**
+ * ${codeBeanProperties.get(0).description} 实体类
+ * @author <a href="mailto:$!{annotation.authorMail}">$!{annotation.authorName}</a>
+ * @date $!{annotation.date}
+ *
+ * @version $!{annotation.version}
+ *
+ */
+@Entity
+@Table(name = "${bean.tableName}")
+public class ${bean.name} implements Serializable {
+	private static final long serialVersionUID = 1L;
+##foreach begin
+##################################################
+#foreach ( $codeBeanProperty in $codeBeanProperties )
+#if($codeBeanProperty.comment!="")
+	/**
+	* $codeBeanProperty.comment
+	*/
+#end
+#if($codeBeanProperty.priKey=="PRI")
+	@Id
+#end
+#if($codeBeanProperty.extra!="")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+#end
+#if($codeBeanProperty.type=="date")
+	@Temporal(TemporalType.DATE)
+#end
+#if($codeBeanProperty.type=="datetime")
+	@Temporal(TemporalType.TIMESTAMP)
+#end
+#if($codeBeanProperty.isTransient=="1")
+   @Transient
+#end
+	private $codeBeanProperty.javaType $codeBeanProperty.javaField;
+###########
+##foreach end
+#end
+
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.isQuery=="1")
+#if($codeBeanProperty.type=="date" || $codeBeanProperty.type=="datetime")
+	@Transient
+	private Date ${codeBeanProperty.javaField}Start;
+	@Transient
+	private Date ${codeBeanProperty.javaField}End;
+#end
+#end
+#end
+
+##foreach begin
+##################################################
+#foreach ( $codeBeanProperty in $codeBeanProperties )
+	public $codeBeanProperty.javaType get${codeBeanProperty.methodFieldName}(){
+		return $codeBeanProperty.javaField;
+	}
+	public void set${codeBeanProperty.methodFieldName}($codeBeanProperty.javaType $codeBeanProperty.javaField){
+		this.$codeBeanProperty.javaField=$codeBeanProperty.javaField;
+	}
+###########
+##foreach end
+#end
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.isQuery=="1")
+#if($codeBeanProperty.type=="date" || $codeBeanProperty.type=="datetime")
+    public Date get${codeBeanProperty.methodFieldName}Start(){
+       return ${codeBeanProperty.javaField}Start;
+    }
+    public void set${codeBeanProperty.methodFieldName}Start(Date ${codeBeanProperty.javaField}Start){
+        this.${codeBeanProperty.javaField}Start=${codeBeanProperty.javaField}Start;
+    }
+	public Date get${codeBeanProperty.methodFieldName}End(){
+        return ${codeBeanProperty.javaField}End;
+    }
+	public void set${codeBeanProperty.methodFieldName}End(Date ${codeBeanProperty.javaField}End){
+        this.${codeBeanProperty.javaField}End=${codeBeanProperty.javaField}End;
+    }
+#end
+#end
+#end
+
+}

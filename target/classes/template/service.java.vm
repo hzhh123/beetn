@@ -1,0 +1,17 @@
+package com.hd.service;
+
+import com.hd.entity.${bean.name};
+import com.hd.util.result.PageInfo;
+
+public interface ${bean.name}Service {
+    void save(${bean.name} ${bean.lowerName});
+    void delete(Long id);
+    void update(${bean.name} ${bean.lowerName});
+    ${bean.name} get(Long id);
+    void selectDataGrid(PageInfo pageInfo);
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.valid!="" && $codeBeanProperty.valid)
+    boolean valid${codeBeanProperty.methodFieldName}(${codeBeanProperty.javaType}  ${codeBeanProperty.javaField});
+#end
+#end
+}

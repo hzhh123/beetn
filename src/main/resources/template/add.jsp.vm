@@ -1,0 +1,167 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/commons/global.jsp" %>
+<style>
+.easyui-text{
+	width: 140px; height: 25px;border-radius:5px;border:thin solid #ddd;
+	border-color:#a4e9c1;
+}
+.easyui-text:focus{
+	outline: none;
+}
+</style>
+<script type="text/javascript">
+    $(function() {
+        $('#${bean.lowerName}AddForm').form({
+            url : '${path}/${bean.lowerName}/add',
+            onSubmit : function() {
+                progressLoad();
+                var isValid = $(this).form('validate');
+                if (!isValid) {
+                    progressClose();
+                }
+                return isValid;
+            },
+            success : function(result) {
+                progressClose();
+                result = $.parseJSON(result);
+                if (result.success) {
+                    showMsg(result.msg);
+                    parent.$.modalDialog.openner_dataGrid.datagrid('reload');//之所以能在这里调用到parent.$.modalDialog.openner_dataGrid这个对象，是因为user.jsp页面预定义好了
+                    parent.$.modalDialog.handler.dialog('close');
+                } else {
+                    var form = $('#${bean.lowerName}AddForm');
+                    parent.$.messager.alert('错误', result.msg, 'error');
+                }
+            }
+        });
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.valid!="" && $codeBeanProperty.valid)
+     $('#${codeBeanProperty.javaField}').blur(function(){
+        	$.ajax({
+        		url:basePath+'/${bean.lowerName}/valid${codeBeanProperty.methodFieldName}',
+        		data:{"${codeBeanProperty.javaField}":$('#${codeBeanProperty.javaField}').val()},
+        		type:'POST',
+        		dataType:'json',
+        		success:function(result){
+        			if(!result.success){
+        				parent.$.messager.alert('错误', result.msg, 'error');
+        			}
+        		}
+        	})
+        })
+#end
+#end
+    });
+</script>
+<div class="easyui-layout" data-options="fit:true,border:false" >
+    <div data-options="region:'center',border:false" style="overflow-x:hidden;overflow-y: auto;padding: 3px;" >
+        <form id="${bean.lowerName}AddForm" method="post">
+            <table class="grid">
+#set($m=1)
+#set($n=1)
+#set($html="")
+#foreach($codeBeanProperty in $codeBeanProperties)
+#if($codeBeanProperty.javaField!="id")
+#if($m%2!=0)
+#set($html=$html+" <tr>
+                     <td>$codeBeanProperty.comment</td>
+                      <td>
+#if($codeBeanProperty.showType=='hidden')
+                       <input type='hidden' name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField'>
+#end
+#if($codeBeanProperty.showType=='text')
+#if($codeBeanProperty.valid!=''&& $codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField'  type='text' placeholder='请输入$codeBeanProperty.comment' class='easyui-text easyui-validatebox span2' data-option='$codeBeanProperty.valid'>
+#end
+#if($codeBeanProperty.valid=='' || !$codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField'  type='text' placeholder='请输入$codeBeanProperty.comment' class='easyui-text  span2' >
+#end
+#end
+#if($codeBeanProperty.showType=='textarea')
+#if($codeBeanProperty.valid!=''&& $codeBeanProperty.valid)
+                        <textarea name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' style='border-radius:5px;min-height:50px;min-width:300px; class='easyui-validatebox easyui-text' data-option='$codeBeanProperty.valid'></textarea>
+#end
+#if($codeBeanProperty.valid=='' || !$codeBeanProperty.valid)
+                      <textarea name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' style='border-radius:5px;min-height:50px;min-width:300px;' class='easyui-text'></textarea>
+#end
+#end
+#if($codeBeanProperty.showType=='date')
+#if($codeBeanProperty.valid!=''&& $codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' type='text'  class='easyui-text easyui-datebox easyui-validatebox span2' data-options='required:true' value='' style='height: 29px;'>
+#end
+#if($codeBeanProperty.valid=='' || !$codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' type='text'  class='easyui-text easyui-datebox  span2' data-options='' value='' style='height: 29px;'>
+#end
+#end
+#if($codeBeanProperty.showType=='select')
+                        <select name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' class='easyui-combobox' data-options=""width:140,height:29,editable:false,panelHeight:'auto'"">
+                            <option value='1'>有效</option>
+                            <option value='0'>无效</option>
+                        </select>
+#end
+                     </td>")
+#end
+#if($m%2==0)
+#set($html=$html+"
+                      <td>$codeBeanProperty.comment</td>
+                      <td>
+#if($codeBeanProperty.showType=='hidden')
+                       <input type='hidden' name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField'>
+#end
+#if($codeBeanProperty.showType=='text')
+#if($codeBeanProperty.valid!=''&& $codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField'  type='text' placeholder='请输入$codeBeanProperty.comment' class='easyui-text easyui-validatebox span2' data-option='$codeBeanProperty.valid'>
+#end
+#if($codeBeanProperty.valid=='' || !$codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField'  type='text' placeholder='请输入$codeBeanProperty.comment' class='easyui-text  span2' >
+#end
+#end
+#if($codeBeanProperty.showType=='textarea')
+#if($codeBeanProperty.valid!=''&& $codeBeanProperty.valid)
+                        <textarea name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' style='border-radius:5px;min-height:50px;min-width:300px; class='easyui-validatebox easyui-text' data-option='$codeBeanProperty.valid'></textarea>
+#end
+#if($codeBeanProperty.valid=='' || !$codeBeanProperty.valid)
+                      <textarea name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' style='border-radius:5px;min-height:50px;min-width:300px;' class='easyui-text'></textarea>
+#end
+#end
+#if($codeBeanProperty.showType=='date')
+#if($codeBeanProperty.valid!=''&& $codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' type='text'  class='easyui-text easyui-datebox easyui-validatebox span2' data-options='required:true' value='' style='height: 29px;'>
+#end
+#if($codeBeanProperty.valid=='' || !$codeBeanProperty.valid)
+                        <input name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' type='text'  class='easyui-text easyui-datebox  span2' data-options='' value='' style='height: 29px;'>
+#end
+#end
+#if($codeBeanProperty.showType=='select')
+                        <select name='$codeBeanProperty.javaField' id='$codeBeanProperty.javaField' class='easyui-combobox' data-options=""width:140,height:29,editable:false,panelHeight:'auto'"">
+                            <option value='1'>有效</option>
+                            <option value='0'>无效</option>
+                        </select>
+#end
+                     </td>
+                  </tr>")
+#end
+#set($m=$m+$n)
+#end
+#end
+#set($k=5)
+#set($l=$html.length()-$k)
+#set($var=$html.substring($l,$html.length()))
+#if($var=="</td>")
+#set($e=$html)
+#set($al=$e.lastIndexOf("<td>"))
+#set($b=$e.substring(0,$al))
+#set($c=$e.substring($al,$e.length()))
+#set($c=$c.replace('<td>','<td colspan="3">'))
+#set($f=$b+$c)
+#set($f=$f+"</tr>")
+#end
+#if($var!="</td>")
+#set($f=$html)
+#end
+$f
+
+            </table>
+        </form>
+    </div>
+</div>
